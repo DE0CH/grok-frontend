@@ -22,6 +22,42 @@
   color: #535bf2;
 }
 
+.api-key-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  box-sizing: border-box;
+}
+
+.api-key-input::placeholder {
+  color: #666;
+}
+
+.api-key-input:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.login-page .primary-button {
+  margin-top: 0.5rem;
+}
+
+.result-on-top {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-top: 0;
+}
+
+.preview-at-bottom {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
 .page {
   text-align: left;
 }
@@ -56,6 +92,33 @@
 
 .block input[type="file"] {
   font-size: 0.9rem;
+}
+
+.slider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  accent-color: #646cff;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #646cff;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #646cff;
+  cursor: pointer;
+  border: none;
 }
 
 .block textarea {

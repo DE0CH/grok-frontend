@@ -45,17 +45,14 @@ export default function ImageToImage() {
       <h1>Image to Image</h1>
       <p className="subtitle">Upload an image and describe how to edit it. The model returns a new image.</p>
 
-      <div className="form">
-        <label className="block">
-          <span>Image</span>
-          <input type="file" accept="image/*" onChange={onFileChange} />
-        </label>
-        {preview && (
-          <div className="preview-wrap">
-            <img src={preview} alt="Upload preview" className="preview-img" />
-          </div>
-        )}
+      {resultUrl && (
+        <div className="result result-on-top">
+          <h2>Result</h2>
+          <img src={resultUrl} alt="Generated" className="result-img" />
+        </div>
+      )}
 
+      <div className="form">
         <label className="block">
           <span>Prompt</span>
           <textarea
@@ -66,16 +63,23 @@ export default function ImageToImage() {
           />
         </label>
 
+        <label className="block">
+          <span>Image</span>
+          <input type="file" accept="image/*" onChange={onFileChange} />
+        </label>
+
         <button type="button" onClick={submit} disabled={loading || !preview || !prompt.trim()}>
           {loading ? "Generating…" : "Generate image"}
         </button>
       </div>
 
       {error && <p className="error">{error}</p>}
-      {resultUrl && (
-        <div className="result">
-          <h2>Result</h2>
-          <img src={resultUrl} alt="Generated" className="result-img" />
+      {preview && (
+        <div className="preview-wrap preview-at-bottom">
+          <label className="block">
+            <span>Input image</span>
+          </label>
+          <img src={preview} alt="Upload preview" className="preview-img" />
         </div>
       )}
     </div>
