@@ -1,5 +1,21 @@
 import { useEffect } from "react";
 import { Link, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+
+const SITE_TITLE = "Grok Image & Video";
+
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Image to Image",
+  "/login": "Log in",
+  "/image-to-video": "Image to Video",
+};
+
+function usePageTitle() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const pageTitle = PAGE_TITLES[pathname];
+    document.title = pageTitle ? `${pageTitle} — ${SITE_TITLE}` : `Not found — ${SITE_TITLE}`;
+  }, [pathname]);
+}
 import { setGrokApiKey } from "./lib/grokApi";
 import { getApiKeyFromCookie, clearApiKeyCookie } from "./lib/cookies";
 import Login from "./pages/Login";
@@ -44,6 +60,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  usePageTitle();
   return (
     <>
       <Routes>

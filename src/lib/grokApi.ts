@@ -67,8 +67,23 @@ function dataUriToUint8Array(dataUri: string): Uint8Array {
   return arr;
 }
 
-/** Extract a user-facing message from API errors (e.g. content moderation). */
+/** Extract a user-facing message from API errors (e.g. content moderation, rate limits, credits). */
 function getErrorMessage(err: unknown): string {
+  // SDK RetryError: "Failed after 3 attempts. Last error: ..." — use the last underlying error
+  if (err && typeof err === "object" && "errors" in err && Array.isArray((err as { errors: unknown[] }).errors)) {
+    const errors = (err as { errors: unknown[]; message?: string }).errors;
+    const last = errors[errors.length - 1];
+    if (last !== undefined) {
+      const inner = getErrorMessage(last);
+      if (inner && inner !== "Request failed") return inner;
+    }
+    const msg = (err as { message?: string }).message;
+    if (typeof msg === "string" && msg.includes("Last error:")) {
+      const after = msg.split("Last error:")[1]?.trim();
+      if (after) return after;
+    }
+  }
+
   let body: string | null = null;
   if (
     err &&
@@ -77,6 +92,11 @@ function getErrorMessage(err: unknown): string {
     typeof (err as { responseBody?: string }).responseBody === "string"
   ) {
     body = (err as { responseBody: string }).responseBody;
+  } else if (err && typeof err === "object" && "data" in err) {
+    const data = (err as { data?: { error?: string | { message?: string } } }).data;
+    if (data && typeof data.error === "string") return data.error;
+    if (data?.error && typeof data.error === "object" && typeof data.error.message === "string")
+      return data.error.message;
   } else if (err instanceof Error && err.message.trim().startsWith("{")) {
     body = err.message;
   }
@@ -90,7 +110,13 @@ function getErrorMessage(err: unknown): string {
       // not JSON
     }
   }
-  if (err instanceof Error) return err.message;
+  if (err instanceof Error) {
+    if ("cause" in err && err.cause !== undefined) {
+      const fromCause = getErrorMessage(err.cause);
+      if (fromCause && fromCause !== "Request failed") return fromCause;
+    }
+    return err.message;
+  }
   return "Request failed";
 }
 
