@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { imageEdit } from "../lib/grokApi";
+import ImageUpload from "../components/ImageUpload";
 
 export default function ImageToImage() {
   const [preview, setPreview] = useState<string | null>(null);
@@ -8,9 +9,7 @@ export default function ImageToImage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  const onFileSelect = useCallback((f: File) => {
     if (!f.type.startsWith("image/")) {
       setError("Please select an image file.");
       return;
@@ -63,10 +62,7 @@ export default function ImageToImage() {
           />
         </label>
 
-        <label className="block">
-          <span>Image</span>
-          <input type="file" accept="image/*" onChange={onFileChange} />
-        </label>
+        <ImageUpload preview={preview} onFileSelect={onFileSelect} />
 
         <button type="button" onClick={submit} disabled={loading || !preview || !prompt.trim()}>
           {loading ? "Generating…" : "Generate image"}
@@ -74,14 +70,6 @@ export default function ImageToImage() {
       </div>
 
       {error && <p className="error">{error}</p>}
-      {preview && (
-        <div className="preview-wrap preview-at-bottom">
-          <label className="block">
-            <span>Input image</span>
-          </label>
-          <img src={preview} alt="Upload preview" className="preview-img" />
-        </div>
-      )}
     </div>
   );
 }

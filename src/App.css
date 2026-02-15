@@ -1,9 +1,3 @@
-#root {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
-
 .nav {
   display: flex;
   gap: 1rem;
@@ -20,6 +14,20 @@
 
 .nav a:hover {
   color: #535bf2;
+}
+
+.nav-logout {
+  margin-left: auto;
+  font-size: 0.95rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.nav-logout:hover {
+  color: #e57373;
 }
 
 .api-key-input {
@@ -40,6 +48,51 @@
 .api-key-input:focus {
   outline: none;
   border-color: #646cff;
+}
+
+.login-help {
+  margin-bottom: 1.5rem;
+}
+
+.login-help-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.login-help-toggle:hover {
+  color: #646cff;
+}
+
+.login-explanation {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.login-explanation p {
+  margin: 0 0 0.75rem;
+}
+
+.login-explanation p:last-child {
+  margin-bottom: 0;
+}
+
+.login-explanation a {
+  color: #646cff;
+}
+
+.login-explanation a:hover {
+  color: #535bf2;
 }
 
 .login-page .primary-button {
@@ -90,8 +143,90 @@
   font-weight: 500;
 }
 
-.block input[type="file"] {
-  font-size: 0.9rem;
+.upload-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  padding: 1.25rem;
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.upload-zone:hover {
+  border-color: rgba(100, 108, 255, 0.5);
+  background: rgba(100, 108, 255, 0.06);
+}
+
+.upload-zone--dragging {
+  border-color: #646cff;
+  background: rgba(100, 108, 255, 0.12);
+}
+
+.upload-zone--has-preview {
+  min-height: 120px;
+  padding: 0.75rem;
+}
+
+.upload-zone-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.upload-zone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-zone-icon {
+  display: flex;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.upload-zone:hover .upload-zone-icon {
+  color: rgba(100, 108, 255, 0.7);
+}
+
+.upload-zone-text {
+  font-size: 0.95rem;
+  color: #888;
+}
+
+.upload-zone:hover .upload-zone-text {
+  color: #aaa;
+}
+
+.upload-zone-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.upload-zone-thumb {
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: 8px;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.upload-zone-change {
+  font-size: 0.85rem;
+  color: #646cff;
+}
+
+.upload-zone:hover .upload-zone-change {
+  text-decoration: underline;
 }
 
 .slider {
@@ -180,6 +315,53 @@
 @media (prefers-color-scheme: light) {
   .nav {
     border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .login-help-toggle {
+    color: #666;
+  }
+
+  .login-help-toggle:hover {
+    color: #535bf2;
+  }
+
+  .login-explanation {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .upload-zone {
+    border-color: rgba(0, 0, 0, 0.18);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .upload-zone:hover {
+    border-color: rgba(100, 108, 255, 0.5);
+    background: rgba(100, 108, 255, 0.08);
+  }
+
+  .upload-zone--dragging {
+    border-color: #646cff;
+    background: rgba(100, 108, 255, 0.15);
+  }
+
+  .upload-zone-icon {
+    color: rgba(0, 0, 0, 0.35);
+  }
+
+  .upload-zone:hover .upload-zone-icon {
+    color: rgba(100, 108, 255, 0.8);
+  }
+
+  .upload-zone-text {
+    color: #666;
+  }
+
+  .upload-zone:hover .upload-zone-text {
+    color: #555;
+  }
+
+  .upload-zone-thumb {
+    border-color: rgba(0, 0, 0, 0.1);
   }
 
   .block textarea {

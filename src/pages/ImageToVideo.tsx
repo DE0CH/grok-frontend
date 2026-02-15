@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { imageToVideo } from "../lib/grokApi";
+import ImageUpload from "../components/ImageUpload";
 
 const DURATION_MIN = 1;
 const DURATION_MAX = 15;
@@ -13,9 +14,7 @@ export default function ImageToVideo() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  const onFileSelect = useCallback((f: File) => {
     if (!f.type.startsWith("image/")) {
       setError("Please select an image file.");
       return;
@@ -86,10 +85,7 @@ export default function ImageToVideo() {
           />
         </label>
 
-        <label className="block">
-          <span>Image</span>
-          <input type="file" accept="image/*" onChange={onFileChange} />
-        </label>
+        <ImageUpload preview={preview} onFileSelect={onFileSelect} />
 
         <button type="button" onClick={submit} disabled={loading || !preview || !prompt.trim()}>
           {loading ? "Generating video…" : "Generate video"}
@@ -97,14 +93,6 @@ export default function ImageToVideo() {
       </div>
 
       {error && <p className="error">{error}</p>}
-      {preview && (
-        <div className="preview-wrap preview-at-bottom">
-          <label className="block">
-            <span>Input image</span>
-          </label>
-          <img src={preview} alt="Upload preview" className="preview-img" />
-        </div>
-      )}
     </div>
   );
 }

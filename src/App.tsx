@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { Link, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { setGrokApiKey } from "./lib/grokApi";
-import { getApiKeyFromCookie } from "./lib/cookies";
+import { getApiKeyFromCookie, clearApiKeyCookie } from "./lib/cookies";
 import Login from "./pages/Login";
 import ImageToImage from "./pages/ImageToImage";
 import ImageToVideo from "./pages/ImageToVideo";
+import NotFound from "./pages/NotFound";
 import "./App.css";
 
 function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -22,11 +23,20 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
   if (!key) return null;
 
+  const handleLogout = () => {
+    clearApiKeyCookie();
+    setGrokApiKey(null);
+    navigate("/login");
+  };
+
   return (
     <>
       <nav className="nav">
         <Link to="/">Image to Image</Link>
         <Link to="/image-to-video">Image to Video</Link>
+        <button type="button" className="nav-logout" onClick={handleLogout}>
+          Log out
+        </button>
       </nav>
       <main>{children}</main>
     </>
@@ -54,6 +64,7 @@ function App() {
             </ProtectedLayout>
           }
         />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
