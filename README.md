@@ -10,7 +10,7 @@ A small web app to edit images and generate videos using the [xAI (Grok) API](ht
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or later)
+- [Node.js](https://nodejs.org/) (developed and tested with v24)
 - An [xAI API key](https://console.x.ai/) (the API is paid; see xAI for pricing).
 
 ## Setup and run

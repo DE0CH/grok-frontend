@@ -387,3 +387,32 @@
     color: #2e7d32;
   }
 }
+
+/* App layout: footer at bottom of viewport or bottom of content, whichever is lower.
+   Min-height matches viewport minus #root padding so we don't get an extra scrollbar. */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 3rem);
+}
+
+.app-content {
+  flex: 1;
+}
+
+/* GitHub source link: lower right, at bottom of scroll */
+.footer-github {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 0 0;
+}
+
+.footer-github a {
+  display: block;
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 0.2s;
+}
+
+.footer-github a:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
