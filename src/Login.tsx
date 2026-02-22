@@ -36,7 +36,6 @@ export default function Login() {
 
   return (
     <div className="page login-page">
-    <div className="login-card">
       <h1>Log in</h1>
       <p className="subtitle">Enter your API key to use Image to Image and Image to Video.</p>
 
@@ -94,7 +93,6 @@ export default function Login() {
           Continue
         </button>
       </form>
-    </div>
     </div>
   );
 }
