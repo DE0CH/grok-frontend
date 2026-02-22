@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 
 const SITE_TITLE = "Grok Image & Video";
 
@@ -52,10 +52,10 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <nav className="nav">
-        <Link to="/">Image to Image</Link>
-        <Link to="/text-to-image">Text to Image</Link>
-        <Link to="/image-to-video">Image to Video</Link>
+      <nav className="nav"><span className="nav-brand">Grok Image</span>
+        <NavLink to="/" end>Image to Image</NavLink>
+        <NavLink to="/text-to-image">Text to Image</NavLink>
+        <NavLink to="/image-to-video">Image to Video</NavLink>
         <button type="button" className="nav-logout" onClick={handleLogout}>
           Log out
         </button>
