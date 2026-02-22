@@ -20,8 +20,8 @@ function usePageTitle() {
     document.title = pageTitle ? `${pageTitle} — ${SITE_TITLE}` : `Not found — ${SITE_TITLE}`;
   }, [pathname]);
 }
-import { setGrokApiKey } from "./lib/grokApi";
-import { getApiKeyFromCookie, clearApiKeyCookie } from "./lib/cookies";
+import { setGrokApiKey, setGrokBaseUrl } from "./lib/grokApi";
+import { getApiKeyFromCookie, clearApiKeyCookie, getBaseUrlFromCookie, clearBaseUrlCookie } from "./lib/cookies";
 import Login from "./pages/Login";
 import ImageToImage from "./pages/ImageToImage";
 import ImageToVideo from "./pages/ImageToVideo";
@@ -39,6 +39,8 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
       navigate("/login", { state: { from: location }, replace: true });
     } else {
       setGrokApiKey(key);
+      const savedUrl = getBaseUrlFromCookie();
+      setGrokBaseUrl(savedUrl);
     }
   }, [key, navigate, location]);
 
@@ -46,7 +48,9 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = () => {
     clearApiKeyCookie();
+    clearBaseUrlCookie();
     setGrokApiKey(null);
+    setGrokBaseUrl(null);
     navigate("/login");
   };
 

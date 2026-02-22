@@ -2,8 +2,13 @@ import { createXai } from "@ai-sdk/xai";
 import { generateImage } from "ai";
 
 let userApiKey: string | null = null;
+let userBaseUrl: string | null = null;
 
 /** Set the API key from the UI input (overrides env). Pass null to clear. */
+export function setGrokBaseUrl(url: string | null): void {
+  userBaseUrl = url?.trim() || null;
+}
+
 export function setGrokApiKey(key: string | null): void {
   userApiKey = key?.trim() || null;
 }
@@ -14,7 +19,7 @@ function getApiKey(): string {
 }
 
 const getBaseUrl = () =>
-  import.meta.env.VITE_GROK_API_URL ?? "https://api.x.ai/v1";
+  userBaseUrl ?? import.meta.env.VITE_GROK_API_URL ?? "https://api.x.ai/v1";
 
 const XAI_CDN_PREFIXES = ["https://imgen.x.ai/", "https://vidgen.x.ai/"];
 
