@@ -27,33 +27,41 @@ export default function TextToImage() {
 
   return (
     <div className="page">
-      <h1>Text to Image</h1>
-      <p className="subtitle">Describe an image. The model generates it from your prompt.</p>
+      <div className="page-header">
+        <h1>Text to Image</h1>
+        <p className="subtitle">Describe an image. The model generates it from your prompt.</p>
+      </div>
 
       {resultUrl && (
         <div className="result result-on-top">
-          <h2>Result</h2>
           <img src={resultUrl} alt="Generated" className="result-img" />
           <a href={resultUrl} download="grok-image.png" className="download-link">
-            Download image
+            ↓ Download image
           </a>
         </div>
       )}
 
-      <div className="form">
-        <label className="block">
-          <span>Prompt</span>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g. A collage of London landmarks in a stenciled street-art style"
-            rows={4}
-          />
-        </label>
-
-        <button type="button" onClick={submit} disabled={loading || !prompt.trim()}>
-          {loading ? "Generating…" : "Generate image"}
-        </button>
+      <div className="form-card">
+        <div className="form">
+          <label className="block">
+            <span>Prompt</span>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="e.g. A collage of London landmarks in a stenciled street-art style"
+              rows={4}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
+            />
+          </label>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={submit}
+            disabled={loading || !prompt.trim()}
+          >
+            {loading ? <><span className="spinner" /> Generating…</> : "Generate image"}
+          </button>
+        </div>
       </div>
 
       {error && <p className="error">{error}</p>}

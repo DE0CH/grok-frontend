@@ -41,32 +41,50 @@ export default function ImageToImage() {
 
   return (
     <div className="page">
-      <h1>Image to Image</h1>
-      <p className="subtitle">Upload an image and describe how to edit it. The model returns a new image.</p>
+      <div className="page-header">
+        <h1>Image to Image</h1>
+        <p className="subtitle">Upload an image and describe how to edit it. The model returns a new image.</p>
+      </div>
 
       {resultUrl && (
         <div className="result result-on-top">
-          <h2>Result</h2>
-          <img src={resultUrl} alt="Generated" className="result-img" />
+          <div className="result-compare">
+            <div className="result-compare-item">
+              <span className="result-compare-label">Original</span>
+              <img src={preview!} alt="Original" className="result-img" />
+            </div>
+            <div className="result-compare-item">
+              <span className="result-compare-label">Generated</span>
+              <img src={resultUrl} alt="Generated" className="result-img" />
+            </div>
+          </div>
+          <a href={resultUrl} download="grok-image.png" className="download-link">
+            ↓ Download image
+          </a>
         </div>
       )}
 
-      <div className="form">
-        <label className="block">
-          <span>Prompt</span>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g. Change the sky to sunset and add birds"
-            rows={3}
-          />
-        </label>
-
-        <ImageUpload preview={preview} onFileSelect={onFileSelect} />
-
-        <button type="button" onClick={submit} disabled={loading || !preview || !prompt.trim()}>
-          {loading ? "Generating…" : "Generate image"}
-        </button>
+      <div className="form-card">
+        <div className="form">
+          <label className="block">
+            <span>Prompt</span>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="e.g. Change the sky to sunset and add birds"
+              rows={3}
+            />
+          </label>
+          <ImageUpload preview={preview} onFileSelect={onFileSelect} />
+          <button
+            type="button"
+            className="primary-button"
+            onClick={submit}
+            disabled={loading || !preview || !prompt.trim()}
+          >
+            {loading ? <><span className="spinner" /> Generating…</> : "Generate image"}
+          </button>
+        </div>
       </div>
 
       {error && <p className="error">{error}</p>}
