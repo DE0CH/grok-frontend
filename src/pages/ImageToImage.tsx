@@ -10,18 +10,28 @@ export default function ImageToImage() {
   const [error, setError] = useState<string | null>(null);
 
   const onFileSelect = useCallback((f: File) => {
-    if (!f.type.startsWith("image/")) { setError("Please select an image file."); return; }
-    setError(null); setResultUrl(null);
+    if (!f.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
+    }
+    setError(null);
+    setResultUrl(null);
     const reader = new FileReader();
     reader.onload = () => setPreview(reader.result as string);
     reader.readAsDataURL(f);
   }, []);
 
   const submit = useCallback(async () => {
-    if (!preview || !prompt.trim()) { setError("Please upload an image and enter a prompt."); return; }
-    setLoading(true); setError(null); setResultUrl(null);
+    if (!preview || !prompt.trim()) {
+      setError("Please upload an image and enter a prompt.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResultUrl(null);
     try {
-      setResultUrl(await imageEdit(prompt.trim(), preview));
+      const url = await imageEdit(prompt.trim(), preview);
+      setResultUrl(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Request failed");
     } finally {

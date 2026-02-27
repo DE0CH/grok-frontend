@@ -8,10 +8,16 @@ export default function TextToImage() {
   const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(async () => {
-    if (!prompt.trim()) { setError("Please enter a prompt."); return; }
-    setLoading(true); setError(null); setResultUrl(null);
+    if (!prompt.trim()) {
+      setError("Please enter a prompt.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResultUrl(null);
     try {
-      setResultUrl(await textToImage(prompt.trim()));
+      const url = await textToImage(prompt.trim());
+      setResultUrl(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Request failed");
     } finally {
