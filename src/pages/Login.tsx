@@ -28,7 +28,7 @@ export default function Login() {
     <div className="page login-page">
     <div className="login-card">
       <h1>Log in</h1>
-      <p className="subtitle">Enter your xAI API key to use Image to Image, Text to Image, and Image to Video.</p>
+      <p className="subtitle">Enter your xAI API key to use Image to Image, Text to Image and Image to Video.</p>
 
       <div className="login-help">
         <button
