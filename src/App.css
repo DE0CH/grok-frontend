@@ -292,6 +292,17 @@
   border-left: 3px solid var(--error);
   margin-top: 0.5rem;
 }
+.api-notice {
+  font-size: 0.875rem;
+  color: var(--error);
+  padding: 0.65rem 1rem;
+  background: var(--error-bg);
+  border-radius: var(--r-sm);
+  border-left: 3px solid var(--error);
+  margin-top: 1.5rem;
+}
+.api-notice a { color: var(--accent); }
+.api-notice a:hover { color: var(--accent-hover); text-decoration: underline; }
 .status {
   font-size: 0.875rem;
   color: var(--text-2);
