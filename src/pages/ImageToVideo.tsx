@@ -118,8 +118,12 @@ export default function ImageToVideo() {
 
       <p className="api-notice">
         Grok changed its API, so generation is broken at the moment. See{" "}
+        <a href="https://github.com/DE0CH/grok-frontend/issues/4" target="_blank" rel="noopener noreferrer">
+          issue #4
+        </a>{" "}
+        and{" "}
         <a href="https://github.com/DE0CH/grok-frontend/issues/5" target="_blank" rel="noopener noreferrer">
-          https://github.com/DE0CH/grok-frontend/issues/5
+          issue #5
         </a>{" "}
         for more details.
       </p>
