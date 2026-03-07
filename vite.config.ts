@@ -5,6 +5,16 @@ import react from '@vitejs/plugin-react'
 // Proxy for imgen.x.ai and vidgen.x.ai when using `npm run dev` (vite).
 const PROXY_ALLOWED = ['https://imgen.x.ai/', 'https://vidgen.x.ai/'];
 export default defineConfig({
+  server: {
+    proxy: {
+      '/proxy': {
+        target: 'https://api.x.ai',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/proxy/, '/v1')
+      }
+    }
+  },
   plugins: [
     react(),
     {
