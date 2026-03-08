@@ -13,8 +13,8 @@ function getApiKey(): string {
 const getBaseUrl = () =>
   import.meta.env.VITE_GROK_API_URL ?? "https://api.x.ai/v1";
 
-/** Base URL for t2i/i2i/i2v API calls via dev proxy (avoids CORS when xAI omits Allow-Origin). */
-const getProxiedApiBase = () => "/api/proxy-xai";
+/** Base URL for t2i/i2i/i2v API calls via proxy (avoids CORS when xAI omits Allow-Origin). */
+const getProxiedApiBase = () => "/api/proxy";
 
 const XAI_CDN_PREFIXES = ["https://imgen.x.ai/", "https://vidgen.x.ai/"];
 
@@ -26,7 +26,7 @@ function useProxy(url: string): boolean {
 function grokFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url;
   if (useProxy(url)) {
-    const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
     return fetch(proxyUrl, init);
   }
   return fetch(input, init);
@@ -223,7 +223,7 @@ export async function imageToVideo(
     if (pollData.video?.url) {
       const videoUrl = pollData.video.url;
       return useProxy(videoUrl)
-        ? `/api/proxy-image?url=${encodeURIComponent(videoUrl)}`
+        ? `/api/proxy?url=${encodeURIComponent(videoUrl)}`
         : videoUrl;
     }
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
