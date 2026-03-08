@@ -56,6 +56,9 @@ h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.75rem; }
 a { font-weight: 500; color: var(--accent); text-decoration: none; transition: color 0.2s; }
 a:hover { color: var(--accent-hover); }
 
+/* Prevent iOS zoom on input focus (requires font-size >= 16px) */
+input, textarea, select { font-size: 16px; }
+
 button {
   border-radius: var(--r-sm);
   border: 1px solid var(--border);

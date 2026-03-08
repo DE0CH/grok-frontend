@@ -135,7 +135,7 @@
   width: 100%;
   padding: 0.65rem 0.9rem;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 16px; /* prevent iOS zoom on focus */
   color: var(--text);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -153,7 +153,7 @@
   max-width: 12rem;
   padding: 0.6rem 2rem 0.6rem 0.85rem;
   font-family: inherit;
-  font-size: 0.9375rem;
+  font-size: 16px; /* prevent iOS zoom on focus */
   color: var(--text);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -168,7 +168,7 @@
 .api-key-input {
   width: 100%;
   padding: 0.65rem 0.9rem;
-  font-size: 0.9375rem;
+  font-size: 16px; /* prevent iOS zoom on focus */
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--bg-input);
