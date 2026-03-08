@@ -28,11 +28,6 @@
   padding: 0.9rem 0;
   border-bottom: 1px solid var(--border);
   margin-bottom: 2.25rem;
-  position: sticky;
-  top: 0;
-  background-color: var(--bg);
-  backdrop-filter: blur(12px);
-  z-index: 100;
 }
 .nav a {
   font-size: 0.9rem;
