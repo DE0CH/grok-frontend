@@ -88,18 +88,6 @@ export default function ImageToImage() {
       </div>
 
       {error && <p className="error">{error}</p>}
-
-      <p className="api-notice">
-        Grok changed its API, so generation is broken at the moment. See{" "}
-        <a href="https://github.com/DE0CH/grok-frontend/issues/4" target="_blank" rel="noopener noreferrer">
-          issue #4
-        </a>{" "}
-        and{" "}
-        <a href="https://github.com/DE0CH/grok-frontend/issues/5" target="_blank" rel="noopener noreferrer">
-          issue #5
-        </a>{" "}
-        for more details.
-      </p>
     </div>
   );
 }

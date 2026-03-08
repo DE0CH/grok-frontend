@@ -1,7 +1,5 @@
 # Grok Image & Video
 
-<p><strong style="color: #b31d28;">⚠ Note:</strong> Grok changed its API, so generation is broken at the moment. See <a href="https://github.com/DE0CH/grok-frontend/issues/4">issue #4</a> and <a href="https://github.com/DE0CH/grok-frontend/issues/5">issue #5</a> for more details.</p>
-
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDE0CH%2Fgrok-frontend)
 
 A small web app to generate and edit images and videos using the [xAI (Grok) API](https://x.ai/). Create images from text, edit images with a prompt, or turn an image into a short video.
