@@ -63,7 +63,7 @@ Open [http://localhost:5173](http://localhost:5173). You’ll be asked to log in
 
 - [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/)
 - [React Router](https://reactrouter.com/)
-- [Vercel AI SDK](https://sdk.vercel.ai/) with [@ai-sdk/xai](https://www.npmjs.com/package/@ai-sdk/xai) for Grok image and video APIs
+- Direct HTTPS calls to the [xAI API](https://docs.x.ai/) for image and video generation (no SDK)
 
 ## Deploy (e.g. Vercel)
 
