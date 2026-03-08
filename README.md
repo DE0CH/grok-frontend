@@ -11,7 +11,7 @@ A small web app to generate and edit images and videos using the [xAI (Grok) API
 - **Text to Image** — Enter a text prompt; get an image generated from your description.
 - **Image to Image** — Upload an image and a text prompt; get a new image edited to match the prompt.
 - **Image to Video** — Upload an image and a prompt, choose duration (1–15 seconds); get a video.
-- **Login** — Your xAI API key is stored in a cookie in your browser (not sent to any server except xAI via the app). No account on this app; just your API key.
+- **Login** — Your xAI API key is stored in a cookie in your browser. xAI asks the browser to block direct requests (CORS), so the key is sent to the app’s proxy (Vercel or the dev server), which forwards it to xAI; the proxy does not log or store your key. No account on this app; just your API key.
 
 ## Prerequisites
 
@@ -63,7 +63,7 @@ Open [http://localhost:5173](http://localhost:5173). You’ll be asked to log in
 
 - [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/)
 - [React Router](https://reactrouter.com/)
-- Direct HTTPS calls to the [xAI API](https://docs.x.ai/) for image and video generation (no SDK)
+- [xAI API](https://docs.x.ai/) for image and video generation (no SDK); xAI asks the browser to block direct requests (CORS), so requests go via the app’s proxy, which forwards your API key to xAI and does not log or store it
 
 ## Deploy (e.g. Vercel)
 
@@ -76,7 +76,7 @@ npm run build
 npx vercel
 ```
 
-(or connect the repo to Vercel for automatic deploys). The API key is always entered in the browser and stored in a cookie; no server-side secrets are required for basic use.
+(or connect the repo to Vercel for automatic deploys). The API key is entered in the browser and stored in a cookie; xAI asks the browser to block direct requests (CORS), so the key is sent to the proxy, which forwards it to xAI and does not log or store it. No server-side secrets are required for basic use.
 
 ## License
 

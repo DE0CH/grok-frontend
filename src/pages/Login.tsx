@@ -42,7 +42,7 @@ export default function Login() {
         {helpOpen && (
           <div className="login-explanation">
             <p>
-              <strong>What is this?</strong> It’s like a password that lets this app use xAI’s tools to generate or edit images and videos for you. The app only stores it on your device. When the app makes a request, the key is sent from your browser directly to xAI’s servers — it never passes through any other server. No one, including the developer of this app, can see your key.
+              <strong>What is this?</strong> It’s like a password that lets this app use xAI’s tools to generate or edit images and videos for you. The app only stores it on your device. Due to technical limitations (xAI asks the browser to block direct requests — CORS), the key is sent to this app's proxy, which forwards it to xAI; the proxy does not log or store your key.
             </p>
             <p>
               <strong>How do I get one?</strong> Go to the{" "}

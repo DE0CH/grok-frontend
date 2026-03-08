@@ -13,6 +13,9 @@ function getApiKey(): string {
 const getBaseUrl = () =>
   import.meta.env.VITE_GROK_API_URL ?? "https://api.x.ai/v1";
 
+/** Base URL for t2i/i2i/i2v API calls via dev proxy (avoids CORS when xAI omits Allow-Origin). */
+const getProxiedApiBase = () => "/api/proxy-xai";
+
 const XAI_CDN_PREFIXES = ["https://imgen.x.ai/", "https://vidgen.x.ai/"];
 
 function useProxy(url: string): boolean {
@@ -70,9 +73,13 @@ function getErrorMessage(err: unknown): string {
   return "Request failed";
 }
 
+const PROXIED_API_PATHS = ["/images/generations", "/images/edits"];
+
 async function xaiPost<T>(path: string, body: Record<string, unknown>): Promise<T> {
-  const baseUrl = getBaseUrl().replace(/\/$/, "");
-  const res = await grokFetch(`${baseUrl}${path}`, {
+  const useProxyApi = PROXIED_API_PATHS.includes(path);
+  const baseUrl = useProxyApi ? getProxiedApiBase() : getBaseUrl().replace(/\/$/, "");
+  const fullPath = useProxyApi ? `/v1${path}` : path;
+  const res = await grokFetch(`${baseUrl}${fullPath}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -162,7 +169,7 @@ export async function imageToVideo(
   options?: { duration?: number; resolution?: string }
 ): Promise<string> {
   const apiKey = getApiKey();
-  const baseUrl = getBaseUrl().replace(/\/$/, "");
+  const baseUrl = getProxiedApiBase();
 
   const body: Record<string, unknown> = {
     model: "grok-imagine-video",
@@ -172,7 +179,7 @@ export async function imageToVideo(
     resolution: options?.resolution === "720p" ? "720p" : "480p",
   };
 
-  const startRes = await fetch(`${baseUrl}/videos/generations`, {
+  const startRes = await fetch(`${baseUrl}/v1/videos/generations`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -200,7 +207,7 @@ export async function imageToVideo(
 
   const deadline = Date.now() + POLL_TIMEOUT_MS;
   while (Date.now() < deadline) {
-    const pollRes = await fetch(`${baseUrl}/videos/${requestId}`, {
+    const pollRes = await fetch(`${baseUrl}/v1/videos/${requestId}`, {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
     if (!pollRes.ok) {
