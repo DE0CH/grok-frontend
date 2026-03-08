@@ -13,8 +13,12 @@ function getApiKey(): string {
 const getBaseUrl = () =>
   import.meta.env.VITE_GROK_API_URL ?? "https://api.x.ai/v1";
 
-/** Base URL for t2i/i2i/i2v API calls via proxy (avoids CORS when xAI omits Allow-Origin). */
-const getProxiedApiBase = () => "/api/proxy";
+const PROXY_BASE = "/api/proxy";
+
+/** Build proxy URL: ?url=<encoded-full-target-url> */
+function proxyUrl(fullTargetUrl: string): string {
+  return `${PROXY_BASE}?url=${encodeURIComponent(fullTargetUrl)}`;
+}
 
 const XAI_CDN_PREFIXES = ["https://imgen.x.ai/", "https://vidgen.x.ai/"];
 
@@ -25,10 +29,7 @@ function useProxy(url: string): boolean {
 /** Custom fetch so requests to imgen.x.ai and vidgen.x.ai go via our proxy (avoids CORS). */
 function grokFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const url = typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url;
-  if (useProxy(url)) {
-    const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
-    return fetch(proxyUrl, init);
-  }
+  if (useProxy(url)) return fetch(proxyUrl(url), init);
   return fetch(input, init);
 }
 
@@ -77,9 +78,10 @@ const PROXIED_API_PATHS = ["/images/generations", "/images/edits"];
 
 async function xaiPost<T>(path: string, body: Record<string, unknown>): Promise<T> {
   const useProxyApi = PROXIED_API_PATHS.includes(path);
-  const baseUrl = useProxyApi ? getProxiedApiBase() : getBaseUrl().replace(/\/$/, "");
-  const fullPath = useProxyApi ? `/v1${path}` : path;
-  const res = await grokFetch(`${baseUrl}${fullPath}`, {
+  const target = useProxyApi
+    ? proxyUrl(`https://api.x.ai/v1${path}`)
+    : `${getBaseUrl().replace(/\/$/, "")}${path}`;
+  const res = await grokFetch(target, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -169,7 +171,6 @@ export async function imageToVideo(
   options?: { duration?: number; resolution?: string }
 ): Promise<string> {
   const apiKey = getApiKey();
-  const baseUrl = getProxiedApiBase();
 
   const body: Record<string, unknown> = {
     model: "grok-imagine-video",
@@ -179,7 +180,7 @@ export async function imageToVideo(
     resolution: options?.resolution === "720p" ? "720p" : "480p",
   };
 
-  const startRes = await fetch(`${baseUrl}/v1/videos/generations`, {
+  const startRes = await fetch(proxyUrl("https://api.x.ai/v1/videos/generations"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -207,7 +208,7 @@ export async function imageToVideo(
 
   const deadline = Date.now() + POLL_TIMEOUT_MS;
   while (Date.now() < deadline) {
-    const pollRes = await fetch(`${baseUrl}/v1/videos/${requestId}`, {
+    const pollRes = await fetch(proxyUrl(`https://api.x.ai/v1/videos/${requestId}`), {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
     if (!pollRes.ok) {
@@ -222,9 +223,7 @@ export async function imageToVideo(
     // Done when we have video.url (API may omit "status" when complete)
     if (pollData.video?.url) {
       const videoUrl = pollData.video.url;
-      return useProxy(videoUrl)
-        ? `/api/proxy?url=${encodeURIComponent(videoUrl)}`
-        : videoUrl;
+      return useProxy(videoUrl) ? proxyUrl(videoUrl) : videoUrl;
     }
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
   }
