@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { proxyFetch } from './api/proxy/handler'
+import { proxyFetch } from './api/proxy'
 
 // https://vite.dev/config/
 // Dev middleware: shim that calls the same proxy handler as Vercel api/proxy.
