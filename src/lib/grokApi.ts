@@ -33,18 +33,81 @@ function grokFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Respon
   return fetch(input, init);
 }
 
-/** Extract a user-facing message from API errors (e.g. content moderation, rate limits, credits). */
+/** User-facing error with optional full API body for display. */
+export interface GrokApiError extends Error {
+  status?: number;
+  responseBody?: string;
+  responseJson?: unknown;
+}
+
+function statusMessage(status: number): string {
+  switch (status) {
+    case 401:
+      return "Unauthorized — check your API key.";
+    case 403:
+      return "Forbidden — access denied.";
+    case 429:
+      return "Rate limited — try again later.";
+    case 502:
+      return "Proxy or network error.";
+    case 500:
+    case 503:
+      return "Server error — try again later.";
+    default:
+      return `Request failed (${status}).`;
+  }
+}
+
+/** Extract a user-facing message from API errors; prefers full JSON when available. */
 function getErrorMessage(err: unknown): string {
-  if (err && typeof err === "object" && "responseBody" in err) {
+  if (err && typeof err === "object" && "responseBody" in err && "status" in err) {
+    const status = (err as { status?: number }).status;
     const body = (err as { responseBody?: string }).responseBody;
-    if (typeof body === "string") {
+    const statusHint = status != null ? statusMessage(status) : "";
+    if (typeof body === "string" && body.trim()) {
       try {
         const parsed = JSON.parse(body) as { error?: string | { message?: string }; code?: string };
+        const extracted =
+          typeof parsed.error === "string"
+            ? parsed.error
+            : parsed.error && typeof parsed.error === "object" && typeof parsed.error.message === "string"
+              ? parsed.error.message
+              : null;
+        const full = body.length > 500 ? body.slice(0, 500) + "…" : body;
+        if (extracted) return `${statusHint}\n${extracted}\n\nFull response:\n${full}`;
+        return `${statusHint}\n\nFull response:\n${body}`;
+      } catch {
+        return `${statusHint}\n\nRaw response:\n${body}`;
+      }
+    }
+    return statusHint || "Request failed.";
+  }
+  if (err && typeof err === "object" && "responseBody" in err) {
+    const body = (err as { responseBody?: string }).responseBody;
+    if (typeof body === "string" && body.trim()) {
+      try {
+        const parsed = JSON.parse(body) as { error?: string | { message?: string } };
         if (typeof parsed.error === "string") return parsed.error;
         if (parsed.error && typeof parsed.error === "object" && typeof parsed.error.message === "string")
           return parsed.error.message;
+        return `API error:\n${body}`;
       } catch {
-        // not JSON
+        return body;
+      }
+    }
+  }
+  if (err && typeof err === "object" && "responseJson" in err) {
+    const json = (err as { responseJson?: unknown }).responseJson;
+    if (json !== undefined && json !== null) {
+      try {
+        const str = JSON.stringify(json, null, 2);
+        const obj = json as { error?: string | { message?: string } };
+        if (typeof obj.error === "string") return `${obj.error}\n\nFull response:\n${str}`;
+        if (obj.error && typeof obj.error === "object" && typeof obj.error.message === "string")
+          return `${obj.error.message}\n\nFull response:\n${str}`;
+        return `API error:\n${str}`;
+      } catch {
+        return String(json);
       }
     }
   }
@@ -60,6 +123,7 @@ function getErrorMessage(err: unknown): string {
       if (typeof parsed.error === "string") return parsed.error;
       if (parsed.error && typeof parsed.error === "object" && typeof parsed.error.message === "string")
         return parsed.error.message;
+      return `API error:\n${err.message}`;
     } catch {
       // not JSON
     }
@@ -92,15 +156,15 @@ async function xaiPost<T>(path: string, body: Record<string, unknown>): Promise<
 
   const text = await res.text();
   if (!res.ok) {
+    const apiErr: GrokApiError = new Error(`Request failed: ${res.status}`) as GrokApiError;
+    apiErr.status = res.status;
+    apiErr.responseBody = text || undefined;
     try {
-      const parsed = JSON.parse(text) as { error?: string | { message?: string } };
-      if (typeof parsed.error === "string") throw new Error(parsed.error);
-      if (parsed.error && typeof parsed.error === "object" && typeof parsed.error.message === "string")
-        throw new Error(parsed.error.message);
-    } catch (e) {
-      if (e instanceof Error && e.message !== "Request failed") throw e;
+      apiErr.responseJson = JSON.parse(text) as unknown;
+    } catch {
+      // leave responseJson undefined; getErrorMessage will use responseBody
     }
-    throw new Error(text || `Request failed: ${res.status}`);
+    throw apiErr;
   }
 
   return text ? (JSON.parse(text) as T) : ({} as T);
@@ -191,15 +255,15 @@ export async function imageToVideo(
 
   if (!startRes.ok) {
     const text = await startRes.text();
+    const apiErr: GrokApiError = new Error(`Request failed: ${startRes.status}`) as GrokApiError;
+    apiErr.status = startRes.status;
+    apiErr.responseBody = text || undefined;
     try {
-      const parsed = JSON.parse(text) as { error?: string | { message?: string } };
-      if (typeof parsed.error === "string") throw new Error(parsed.error);
-      if (parsed.error && typeof parsed.error === "object" && typeof parsed.error.message === "string")
-        throw new Error(parsed.error.message);
-    } catch (e) {
-      if (e instanceof Error && e.message !== "Request failed") throw e;
+      apiErr.responseJson = JSON.parse(text) as unknown;
+    } catch {
+      // non-JSON body
     }
-    throw new Error(text || `Request failed: ${startRes.status}`);
+    throw apiErr;
   }
 
   const startData = (await startRes.json()) as { request_id?: string };
@@ -213,7 +277,15 @@ export async function imageToVideo(
     });
     if (!pollRes.ok) {
       const errText = await pollRes.text();
-      throw new Error(errText || `Poll failed: ${pollRes.status}`);
+      const apiErr: GrokApiError = new Error(`Poll failed: ${pollRes.status}`) as GrokApiError;
+      apiErr.status = pollRes.status;
+      apiErr.responseBody = errText || undefined;
+      try {
+        apiErr.responseJson = JSON.parse(errText) as unknown;
+      } catch {
+        // non-JSON body
+      }
+      throw apiErr;
     }
     const pollData = (await pollRes.json()) as {
       status?: string;
