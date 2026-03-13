@@ -7,6 +7,16 @@ import { proxyFetch } from './api/proxy'
 const PROXY_PREFIX = '/api/proxy'
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/proxy': {
+        target: 'https://api.x.ai',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/proxy/, '/v1')
+      }
+    }
+  },
   plugins: [
     react(),
     {
