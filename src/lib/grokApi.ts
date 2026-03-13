@@ -140,7 +140,8 @@ function getErrorMessage(err: unknown): string {
 
 const PROXIED_API_PATHS = ["/images/generations", "/images/edits"];
 
-async function xaiPost<T>(path: string, body: Record<string, unknown>): Promise<T> {
+/** Low-level POST helper for image endpoints that returns raw response text and surfaces API errors. */
+async function xaiPostRaw(path: string, body: Record<string, unknown>): Promise<string> {
   const useProxyApi = PROXIED_API_PATHS.includes(path);
   const target = useProxyApi
     ? proxyUrl(`https://api.x.ai/v1${path}`)
@@ -167,7 +168,37 @@ async function xaiPost<T>(path: string, body: Record<string, unknown>): Promise<
     throw apiErr;
   }
 
-  return text ? (JSON.parse(text) as T) : ({} as T);
+  return text;
+}
+
+type ImageGenOutcome =
+  | { kind: "success"; dataUri: string }
+  | { kind: "unknown_error"; message: string };
+
+/** Process raw image generation/edit response into success or unknown_error, surfacing raw body on unknown. */
+function processImageGenerationResponse(rawText: string): ImageGenOutcome {
+  let parsed: unknown;
+  if (rawText) {
+    try {
+      parsed = JSON.parse(rawText);
+    } catch {
+      parsed = undefined;
+    }
+  }
+
+  if (parsed && typeof parsed === "object" && "data" in parsed) {
+    const data = parsed as { data?: Array<{ b64_json?: string }> };
+    const first = data.data?.[0]?.b64_json;
+    if (first && typeof first === "string") {
+      return { kind: "success", dataUri: `data:image/png;base64,${first}` };
+    }
+  }
+
+  // If the shape isn't what we expect, surface the raw response body so callers can see what went wrong.
+  return {
+    kind: "unknown_error",
+    message: rawText || "Unexpected image response format",
+  };
 }
 
 /**
@@ -175,18 +206,15 @@ async function xaiPost<T>(path: string, body: Record<string, unknown>): Promise<
  */
 export async function textToImage(prompt: string): Promise<string> {
   try {
-    const data = await xaiPost<{ data?: Array<{ b64_json?: string }> }>(
-      "/images/generations",
-      {
-        model: "grok-imagine-image",
-        prompt: prompt.trim(),
-        response_format: "b64_json",
-      }
-    );
+    const text = await xaiPostRaw("/images/generations", {
+      model: "grok-imagine-image",
+      prompt: prompt.trim(),
+      response_format: "b64_json",
+    });
 
-    const first = data.data?.[0]?.b64_json;
-    if (!first) throw new Error("No image in response");
-    return `data:image/png;base64,${first}`;
+    const outcome = processImageGenerationResponse(text);
+    if (outcome.kind === "success") return outcome.dataUri;
+    throw new Error(outcome.message);
   } catch (err) {
     throw new Error(getErrorMessage(err));
   }
@@ -200,22 +228,19 @@ export async function imageEdit(
   imageDataUri: string
 ): Promise<string> {
   try {
-    const data = await xaiPost<{ data?: Array<{ b64_json?: string }> }>(
-      "/images/edits",
-      {
-        model: "grok-imagine-image",
-        prompt: prompt.trim(),
-        image: {
-          url: imageDataUri,
-          type: "image_url",
-        },
-        response_format: "b64_json",
-      }
-    );
+    const text = await xaiPostRaw("/images/edits", {
+      model: "grok-imagine-image",
+      prompt: prompt.trim(),
+      image: {
+        url: imageDataUri,
+        type: "image_url",
+      },
+      response_format: "b64_json",
+    });
 
-    const first = data.data?.[0]?.b64_json;
-    if (!first) throw new Error("No image in response");
-    return `data:image/png;base64,${first}`;
+    const outcome = processImageGenerationResponse(text);
+    if (outcome.kind === "success") return outcome.dataUri;
+    throw new Error(outcome.message);
   } catch (err) {
     throw new Error(getErrorMessage(err));
   }
