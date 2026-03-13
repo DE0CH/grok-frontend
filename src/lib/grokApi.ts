@@ -222,7 +222,86 @@ export async function imageEdit(
 }
 
 const POLL_INTERVAL_MS = 3000;
-const POLL_TIMEOUT_MS = 600_000; // 10 min
+
+type VideoPollOutcome =
+  | { kind: "pending" }
+  | { kind: "success"; videoUrl: string }
+  | { kind: "known_error"; message: string }
+  | { kind: "unknown_error"; message: string };
+
+/** Process raw video poll response text into one of: pending, success, known_error, unknown_error. */
+function processVideoPollResponse(rawText: string): VideoPollOutcome {
+  let parsed: unknown;
+  if (rawText) {
+    try {
+      parsed = JSON.parse(rawText);
+    } catch {
+      parsed = undefined;
+    }
+  }
+
+  const pollData = parsed;
+
+  // Helper to build a safe fallback message that prefers raw text
+  const fallback = (prefix: string): string => {
+    if (rawText) return `${prefix}: ${rawText}`;
+    try {
+      return `${prefix}: ${JSON.stringify(pollData)}`;
+    } catch {
+      return prefix;
+    }
+  };
+
+  // Completely unexpected type (e.g. non-JSON response)
+  if (pollData === null || typeof pollData !== "object") {
+    return {
+      kind: "unknown_error",
+      message: rawText || fallback("Unexpected video response format"),
+    };
+  }
+
+  const data = pollData as {
+    status?: string;
+    video?: { url?: string };
+    error?: { code?: string; message?: string } | string;
+  };
+
+  // In-progress states
+  if (data.status === "pending" || data.status === "processing" || data.status === "queued") {
+    return { kind: "pending" };
+  }
+
+  // Successful completion with URL
+  if (data.video?.url) {
+    return { kind: "success", videoUrl: data.video.url };
+  }
+
+  // Known failure states with structured error
+  if (data.status === "failed" || data.status === "expired" || data.error) {
+    let message: string | undefined;
+
+    if (typeof data.error === "string") {
+      message = data.error;
+    } else if (data.error && typeof data.error === "object" && typeof data.error.message === "string") {
+      message = data.error.message;
+    } else if (data.status === "expired") {
+      message = "Video request expired";
+    } else if (data.status === "failed") {
+      message = "Video generation failed";
+    }
+
+    return {
+      kind: "known_error",
+      message: message ?? fallback("Video generation error"),
+    };
+  }
+
+  // Anything else is an unknown error shape
+  return {
+    kind: "unknown_error",
+    message: rawText || fallback("Unexpected video response format"),
+  };
+}
 
 /**
  * Image-to-video: HTTP POST to xAI /videos/generations, then poll until done.
@@ -270,34 +349,38 @@ export async function imageToVideo(
   const requestId = startData.request_id;
   if (!requestId) throw new Error("No request_id in response");
 
-  const deadline = Date.now() + POLL_TIMEOUT_MS;
-  while (Date.now() < deadline) {
+  // Poll indefinitely until we get a terminal outcome (success or error).
+  // Timeout behavior is controlled by the caller (e.g. abort signal), not here.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
     const pollRes = await fetch(proxyUrl(`https://api.x.ai/v1/videos/${requestId}`), {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
+    const text = await pollRes.text();
     if (!pollRes.ok) {
-      const errText = await pollRes.text();
       const apiErr: GrokApiError = new Error(`Poll failed: ${pollRes.status}`) as GrokApiError;
       apiErr.status = pollRes.status;
-      apiErr.responseBody = errText || undefined;
+      apiErr.responseBody = text || undefined;
       try {
-        apiErr.responseJson = JSON.parse(errText) as unknown;
+        apiErr.responseJson = JSON.parse(text) as unknown;
       } catch {
         // non-JSON body
       }
       throw apiErr;
     }
-    const pollData = (await pollRes.json()) as {
-      status?: string;
-      video?: { url?: string };
-    };
-    if (pollData.status === "expired") throw new Error("Video request expired");
-    // Done when we have video.url (API may omit "status" when complete)
-    if (pollData.video?.url) {
-      const videoUrl = pollData.video.url;
+
+    const outcome = processVideoPollResponse(text);
+
+    if (outcome.kind === "pending") {
+      // keep polling
+    } else if (outcome.kind === "success") {
+      const videoUrl = outcome.videoUrl;
       return useProxy(videoUrl) ? proxyUrl(videoUrl) : videoUrl;
+    } else {
+      // known_error or unknown_error
+      throw new Error(outcome.message);
     }
+
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
   }
-  throw new Error("Video generation timed out");
 }
