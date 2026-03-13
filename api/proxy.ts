@@ -46,7 +46,6 @@ export async function proxyFetch(request: Request): Promise<Response> {
   }
 
   const allowed = isAllowedUrl(targetUrl);
-  if (!allowed) return new Response("Bad request", { status: 400 });
 
   if (allowed === "cdn") {
     if (request.method !== "GET") return new Response("Bad request", { status: 400 });
@@ -64,22 +63,26 @@ export async function proxyFetch(request: Request): Promise<Response> {
   }
 
   // allowed === "api": forward method, auth, content-type, body
-  const headers: Record<string, string> = {};
-  for (const k of ["authorization", "content-type"]) {
-    const v = request.headers.get(k);
-    if (v) headers[k] = v;
+  if (allowed === "api") {
+    const headers: Record<string, string> = {};
+    for (const k of ["authorization", "content-type"]) {
+      const v = request.headers.get(k);
+      if (v) headers[k] = v;
+    }
+    const body =
+      request.method !== "GET" && request.method !== "HEAD" ? await request.arrayBuffer() : undefined;
+    try {
+      const res = await fetch(targetUrl, { method: request.method, headers, body });
+      const contentType = res.headers.get("content-type");
+      const resHeaders: Record<string, string> = {};
+      if (contentType) resHeaders["Content-Type"] = contentType;
+      return new Response(await res.arrayBuffer(), { status: res.status, headers: resHeaders });
+    } catch {
+      return new Response("Proxy error", { status: 502 });
+    }
   }
-  const body =
-    request.method !== "GET" && request.method !== "HEAD" ? await request.arrayBuffer() : undefined;
-  try {
-    const res = await fetch(targetUrl, { method: request.method, headers, body });
-    const contentType = res.headers.get("content-type");
-    const resHeaders: Record<string, string> = {};
-    if (contentType) resHeaders["Content-Type"] = contentType;
-    return new Response(await res.arrayBuffer(), { status: res.status, headers: resHeaders });
-  } catch {
-    return new Response("Proxy error", { status: 502 });
-  }
+
+  return new Response("Bad request", { status: 400 });
 }
 
 export default { fetch: proxyFetch };
