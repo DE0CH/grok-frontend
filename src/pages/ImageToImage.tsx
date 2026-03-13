@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { imageEdit } from "../lib/grokApi";
+import { getDownloadFilename } from "../lib/downloadUtils";
 import ImageUpload from "../components/ImageUpload";
 
 export default function ImageToImage() {
@@ -58,7 +59,7 @@ export default function ImageToImage() {
               <img src={resultUrl} alt="Generated" className="result-img" />
             </div>
           </div>
-          <a href={resultUrl} download="grok-image.png" className="download-link">
+          <a href={resultUrl} download={getDownloadFilename(resultUrl)} className="download-link">
             ↓ Download image
           </a>
         </div>

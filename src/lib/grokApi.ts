@@ -187,10 +187,16 @@ function processImageGenerationResponse(rawText: string): ImageGenOutcome {
   }
 
   if (parsed && typeof parsed === "object" && "data" in parsed) {
-    const data = parsed as { data?: Array<{ b64_json?: string }> };
-    const first = data.data?.[0]?.b64_json;
-    if (first && typeof first === "string") {
-      return { kind: "success", dataUri: `data:image/png;base64,${first}` };
+    const data = parsed as {
+      data?: Array<{ b64_json?: string; mime_type?: string }>;
+    };
+    const first = data.data?.[0];
+    const b64 = first?.b64_json;
+    if (b64 && typeof b64 === "string") {
+      const mime = first.mime_type && /^image\/[a-z0-9+.-]+$/i.test(first.mime_type)
+        ? first.mime_type
+        : "image/png";
+      return { kind: "success", dataUri: `data:${mime};base64,${b64}` };
     }
   }
 

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { textToImage } from "../lib/grokApi";
+import { getDownloadFilename } from "../lib/downloadUtils";
 
 export default function TextToImage() {
   const [prompt, setPrompt] = useState("");
@@ -35,7 +36,7 @@ export default function TextToImage() {
       {resultUrl && (
         <div className="result result-on-top">
           <img src={resultUrl} alt="Generated" className="result-img" />
-          <a href={resultUrl} download="grok-image.png" className="download-link">
+          <a href={resultUrl} download={getDownloadFilename(resultUrl)} className="download-link">
             ↓ Download image
           </a>
         </div>
